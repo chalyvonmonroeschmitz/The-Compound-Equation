@@ -15,7 +15,6 @@ The `main.py` script allows you to run different functionalities based on the co
 #### Usage
 
 ```bash
-python [main.py](http://_vscodecontentref_/4) --mode=<script_name> --function=<function_name>
 
-python main.py --mode=CC_Trie
-python main.py --mode=Trihesian_matcher
+python main.py --mode google_scraper --search CH4
+python main.py --mode=Trihesian_matcher --compounds "CH4,He,CO2"
