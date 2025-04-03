@@ -1,5 +1,8 @@
 import sys
 import os
+
+import periodictable
+
 # Add the Source directory to the Python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "Source")))
 import argparse
@@ -9,6 +12,7 @@ import CC_Matcher
 from CC_Trie import Trie
 from scrapers import archive_scraper
 from SuffixTrie import SuffixTrie
+from CC_Trie import Compound
 
 
 def run_cc_trie(function, file_path="Data/elements_table_v20.txt"):
@@ -105,10 +109,17 @@ def cc_matcher(function, file_path="Data/elements_table_v20.txt", compounds=["CH
     except FileNotFoundError:
         print(f"File {file_name} not found. Please provide a valid file path.")
 
-    compound_d = CC_Matcher.Get_Mass(compounds[0])
-    compound_i = CC_Matcher.Get_Mass(compounds[1])
-    compound_h = CC_Matcher.Get_Mass(compounds[2])
-    print(CC_Matcher.Get_Cohesion_Constant(compound_d, compound_i, compound_h))
+    if function == "get_cc_constant":
+        compound_d = CC_Matcher.Get_Mass(compounds[0])
+        compound_i = CC_Matcher.Get_Mass(compounds[1])
+        compound_h = CC_Matcher.Get_Mass(compounds[2])
+        print(f"C Constant value for {compounds} is {CC_Matcher.Get_Cohesion_Constant(compound_d, compound_i, compound_h)}")
+    elif function == "get_mass":
+        formula_quantity = CC_Matcher.Get_Mass(compounds[0])
+        mass = 0
+        for e, q in formula_quantity.items():
+            mass += (trie.get(e).data[0].mass * q)
+        print(f"molecular mass for {compounds[0]} is {mass}")
 
 async def run_archiver(search_term=None):
     """

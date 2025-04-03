@@ -50,5 +50,6 @@ python main.py cc_trie --function <function_name> --file <file_path>
 python main.py archiver --search "example search term"
 python main.py cc_trie --function create_matrix --file "elements_table_v20.txt"
 python main.py cc_matcher --function <function_name> --compounds <compound_list> --file "file_path"
+cc_matcher --function get_mass --compounds "NH4NO3" --file Data/elements_table_v20.txt
 python main.py cc_matcher --function get_cc_constant --compounds "CH4 H2O CO2" --file "Data/elements_table_v20.txt"
 python main.py compound_trie_suffix --function search_suffix --file "Data/elements_table_v20.txt"
