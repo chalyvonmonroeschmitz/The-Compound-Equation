@@ -29,7 +29,14 @@ class Google_Scraper(Archiver):
         await asyncio.sleep(2)
         actions = ActionChains(driver)
         actions.send_keys(search_term).send_keys(Keys.RETURN).perform()
-        await asyncio.sleep(20)
+        print("Starting search capture... Please Verify Google Captcha Manually within 20 seconds")
+
+        # Countdown loop for 20 seconds
+        for remaining in range(20, 0, -1):
+            print(f"Time remaining: {remaining} seconds", end="\r")
+            await asyncio.sleep(1)
+
+        print("\nCapturing search data...")
         hrefs = []
 
         while True:

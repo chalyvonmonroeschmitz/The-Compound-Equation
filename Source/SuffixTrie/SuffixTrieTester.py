@@ -1,4 +1,4 @@
-from SuffixTrie import SuffixTrie
+from SuffixTrie.SuffixTrie import SuffixTrie
 
 def main():
     """

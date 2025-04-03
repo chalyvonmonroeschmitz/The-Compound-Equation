@@ -2,6 +2,7 @@ import sys
 from Trie import Trie
 import math
 import re
+from scrapers import archive_scraper
 
 
 def Get_Cohesion_Constant(compound_d, compound_i, compound_h):
@@ -29,7 +30,7 @@ def Get_Mass(compound):
 def main():
     # Initialize the Trie
     trie = Trie()
-    google_scraper = Google_Scraper()
+    scraper = archive_scraper.Google_Scraper()
     search = ""
     region = ""
     command = sys.argv
@@ -56,7 +57,7 @@ def main():
 
 def load_chrome_scraper():
     datacaptures = []
-    scraper = Google_Scraper()
+    scraper = archive_scraper.Google_Scraper()
     driver = scraper.initChromeDriver()
     return driver
 

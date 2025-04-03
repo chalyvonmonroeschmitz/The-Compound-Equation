@@ -1,4 +1,4 @@
-from SuffixTrieData import SuffixTrieData
+from SuffixTrie import SuffixTrieData
 
 class SuffixTrieNode:
     """
@@ -10,7 +10,7 @@ class SuffixTrieNode:
     def __init__(self):
         self.children = {}  # Dictionary to store child nodes
         self.is_terminal = False  # Indicates the end of a suffix
-        self.data = SuffixTrieData()  # Metadata for this node (e.g., positions)
+        self.data = SuffixTrieData.SuffixTrieData()  # Metadata for this node (e.g., positions)
 
     def add_child(self, char):
         """

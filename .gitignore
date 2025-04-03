@@ -6,11 +6,7 @@ __pycache__/
 .idea
 config
 private_key*
-Data/*
 Templates/*
 /Assistant-Log/Chat with Matrix Equation source.txt
 /Source/security/authorizer.py
-/Assistant-Log/chat-557d8575-7441-4236-9dbf-95b8cd294475.txt
-/Assistant-Log/chat-6438419e-9c9e-43f9-96c4-3e8ad9e1ed2a.txt
-/Assistant-Log/chat-f2f20d95-33b1-4172-846c-07cf36f172b8.txt
-/Assistant-Log/
+/Assistant-Log/*

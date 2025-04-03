@@ -1,4 +1,4 @@
-from SuffixTrieNode import SuffixTrieNode
+from SuffixTrie import SuffixTrieNode
 import sys
 # increase the default recursion limit for larger branch sizing
 sys.setrecursionlimit(10**4) # 10 power 4
@@ -14,7 +14,7 @@ class SuffixTrie:
         Initializes the Suffix Trie with a given string and constructs the trie.
         """
         self.text = text
-        self.root = SuffixTrieNode()
+        self.root = SuffixTrieNode.SuffixTrieNode()
 
         # Add all suffixes of the given text to the trie
         if text:
@@ -46,7 +46,7 @@ class SuffixTrie:
                 self.text = file.read().strip()  # Read all text and strip extra whitespace
 
             # Clear existing trie and construct the new one
-            self.root = SuffixTrieNode()
+            self.root = SuffixTrieNode.SuffixTrieNode()
             for i in range(len(self.text)):
                 suffix = self.text[i:]
                 self._insert(suffix, i)
