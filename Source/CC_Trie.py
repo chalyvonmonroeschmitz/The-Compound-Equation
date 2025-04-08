@@ -146,13 +146,15 @@ class Trie:
 
         return top_word
 
-    def read_in_dictionary(self, file_name, elements_file):
+    def read_in_dictionary(self, file_name, elements_file=None):
         """
         Reads a dictionary from a file and inserts all words into the trie.
         """
         trie = Trie()
         # Load custom elements table
         elements_trie = Trie()
+        if elements_file is None:
+            elements_file = file_name
         try:
             with open(elements_file, 'r') as file:
                 for line in file:
@@ -170,7 +172,7 @@ class Trie:
             print(f"Custom Elements Table File Missing from Data/elements_table_(version): {e}")
 
         try:
-            if file_name.find("Chemical_Formulae_"):
+            if "Chemical_Formulae_" in file_name:
                 with open(file_name, 'r') as file:
                     for line in file:
                         try:
@@ -195,12 +197,11 @@ class Trie:
                             trie.insert(formula, data)
                         except ValueError:
                             continue  # Skip lines with invalid data
-            else:
-                return elements_trie
 
         except FileNotFoundError as e:
             print(f"Error: {e}")
-        return trie
+
+        return elements_trie, trie
 
 def chart_elements_mass(trie):
     """
@@ -397,7 +398,7 @@ def plot_matrix(matrix, elements):
     # Add axis labels and title with extra spacing
     plt.xlabel('Element (Columns)', fontsize=16, labelpad=40)  # Increase label padding
     plt.ylabel('Element (Rows)', fontsize=16, labelpad=40)
-    plt.title('Recursive Summation Matrix', fontsize=22, pad=50)  # Add extra padding to title
+    plt.title("Recursive Summation Matrix of Elemental Mass", fontsize=22, pad=50)  # Add extra padding to title
 
     # Adjust layout to minimize overlap
     plt.tight_layout(pad=8.0)  # Higher padding for tight layout
