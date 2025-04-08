@@ -46,10 +46,11 @@ python main.py archiver --search "example search term"
 
 This guide should help you effectively use the utility extension for its various functionalities. 
 ```bash
+python main.py cc_trie --function chart_compound_mass --compound "NH4NO3" --elements_file "Data/elements_table_v20.txt" --file "Data/Chemical_Formulae_Wiki_06042025.txt"
 python main.py cc_trie --function <function_name> --file <file_path>
 python main.py archiver --search "example search term"
 python main.py cc_trie --function create_matrix --file "elements_table_v20.txt"
 python main.py cc_matcher --function <function_name> --compounds <compound_list> --file "file_path"
-cc_matcher --function get_mass --compounds "NH4NO3" --file Data/elements_table_v20.txt
+python main.py cc_matcher --function get_mass --compounds "NH4NO3" --file Data/elements_table_v20.txt
 python main.py cc_matcher --function get_cc_constant --compounds "CH4 H2O CO2" --file "Data/elements_table_v20.txt"
 python main.py compound_trie_suffix --function search_suffix --file "Data/elements_table_v20.txt"
