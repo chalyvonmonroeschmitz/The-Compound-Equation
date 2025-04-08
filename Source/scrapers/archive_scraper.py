@@ -3,9 +3,7 @@ import asyncio
 import datetime
 import json
 import os
-import sys
 import re
-from time import sleep
 from urllib.request import urlopen
 from PIL import Image
 from ibm_cloud_sdk_core import ApiException

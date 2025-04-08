@@ -1,7 +1,6 @@
 #!/usr/bin/python
 import asyncio
 import os
-import sys
 import pytesseract
 from classes.scraper import Scraper
 from ibm_watson import NaturalLanguageUnderstandingV1

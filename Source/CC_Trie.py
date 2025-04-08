@@ -2,7 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+import CC_Matcher
 
 class ElementNode:
 
@@ -146,25 +146,58 @@ class Trie:
 
         return top_word
 
-    def read_in_dictionary(self, file_name):
+    def read_in_dictionary(self, file_name, elements_file):
         """
         Reads a dictionary from a file and inserts all words into the trie.
         """
         trie = Trie()
+        # Load custom elements table
+        elements_trie = Trie()
         try:
-            with open(file_name, 'r') as file:
+            with open(elements_file, 'r') as file:
                 for line in file:
                     try:
-                        number, symbol, name, mass, formula = line.split()
+                        # Split the line and ensure it has exactly 5 values
+                        parts = line.split()
+                        number, symbol, name, mass, formula = parts
                         number = int(number)
-                        symbol = symbol
-                        name = name
                         mass = float(mass)
-                        formula = formula
                         data = Compound(number, symbol, name, mass, formula)
-                        trie.insert(formula, data)
+                        elements_trie.insert(formula, data)
                     except ValueError:
-                        continue  # Skip malformed lines
+                        continue  # Skip lines with invalid data
+        except FileNotFoundError as e:
+            print(f"Custom Elements Table File Missing from Data/elements_table_(version): {e}")
+
+        try:
+            if file_name.find("Chemical_Formulae_"):
+                with open(file_name, 'r') as file:
+                    for line in file:
+                        try:
+                            # Split the line and ensure it has exactly 5 values
+                            parts = line.split('\t')
+                            formula, name, number = parts
+                            number = str(number)
+
+                            # Get Compound Mass
+                            elements = CC_Matcher.Get_Mass(formula)
+                            element_masses = {}
+                            # Sum up masses for each element
+                            for e in elements:
+                                node = elements_trie.get(e)
+                                if node and node.data:  # Ensure the node has data
+                                    total_mass = sum(compound.get_mass() for compound in node.data)
+                                    element_masses[e] = total_mass
+                                    mass = total_mass
+
+                            symbol = str(formula)
+                            data = Compound(number, symbol, name, mass, formula)
+                            trie.insert(formula, data)
+                        except ValueError:
+                            continue  # Skip lines with invalid data
+            else:
+                return elements_trie
+
         except FileNotFoundError as e:
             print(f"Error: {e}")
         return trie
@@ -232,6 +265,50 @@ def chart_element_mass(trie, element):
 
     # returns array of the summations
     return element_masses
+
+def chart_compound_mass(trie, compound):
+    """
+    Plots graph of compounds and their corresponding masses.
+    """
+    compounds = trie.get_words()  # Get all element formulas from the trie
+    compound_masses = {}
+
+    # Sum up masses for each element
+    for e in compounds:
+        try:
+            node = trie.get(e)
+            compound_node = trie.get(compound)
+            if node and node.data and compound_node and compound_node.data:  # Ensure both nodes have data
+                total_mass = compound_node.data[0].mass + sum(compound.get_mass() for compound in node.data)
+                compound_masses[e] = total_mass
+        except ValueError:
+            print(f"Error processing compound {e}: {ValueError}")
+            continue
+
+    # Sort elements alphabetically for better visualization
+    sorted_elements = sorted(compound_masses.keys())
+    sorted_masses = [compound_masses[element] for element in sorted_elements]
+
+    # Split the data into chunks of 33 bins
+    chunk_size = 33
+    for i in range(0, len(sorted_elements), chunk_size):
+        chunk_elements = sorted_elements[i:i + chunk_size]
+        chunk_masses = sorted_masses[i:i + chunk_size]
+
+        # Plot the Cartesian graph for the current chunk
+        plt.figure(figsize=(16, 9))  # Adjusted for 1080p resolution (16:9 aspect ratio)
+        plt.bar(chunk_elements, chunk_masses, color='skyblue')
+        plt.xlabel('Element Formula', fontsize=14, labelpad=20)  # Add padding to the x-axis label
+        plt.ylabel('Total Mass', fontsize=14, labelpad=20)  # Add padding to the y-axis label
+        plt.title(f"Compound Mass Distribution for {compound} (Chunk {i // chunk_size + 1})", fontsize=16, pad=30)
+        plt.xticks(rotation=45, ha='right', fontsize=10)  # Rotate x-axis labels and align them to the right
+        plt.tight_layout(pad=4.0)  # Add padding to prevent overlap
+        plt.subplots_adjust(bottom=0.25)  # Increase bottom margin for better label visibility
+        plt.show()
+        plt.close()
+
+    # Returns array of the summations
+    return compound_masses
 
 
 def create_summation_matrix(trie, elements, x, y, z):

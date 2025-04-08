@@ -6,7 +6,7 @@ import json
 from json import JSONDecodeError
 from os import walk
 from pdf2image import convert_from_path, convert_from_bytes
-from archiver import Archiver
+from archive_scraper import Archiver
 
 
 class Data_Banker(Archiver):

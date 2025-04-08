@@ -5,7 +5,7 @@ import re
 from scrapers import archive_scraper
 
 
-def Get_Cohesion_Constant(compound_d, compound_i, compound_h):
+def Get_C_Constant(compound_d, compound_i, compound_h):
     # (3 * ((d1 + d2 + d3) + (i1 + i2 + i3) + (h1 + h2 + h3)) + 50) * Reciprical of Pi / 1000
     c_constant =  (3 * (sum(compound_d.values()) + sum(compound_i.values()) + sum(compound_h.values())) + 50) * math.pi / 1000
     return c_constant
@@ -53,7 +53,7 @@ def main():
     compound_d = Get_Mass("CH4")
     compound_i = Get_Mass("He")
     compound_h = Get_Mass("H")
-    print(Get_Cohesion_Constant(compound_d, compound_i, compound_h))
+    print(Get_C_Constant(compound_d, compound_i, compound_h))
 
 def load_chrome_scraper():
     datacaptures = []

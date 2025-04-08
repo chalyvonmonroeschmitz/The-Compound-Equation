@@ -1,8 +1,5 @@
 import sys
 import os
-
-import periodictable
-
 # Add the Source directory to the Python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "Source")))
 import argparse
@@ -12,10 +9,9 @@ import CC_Matcher
 from CC_Trie import Trie
 from scrapers import archive_scraper
 from SuffixTrie import SuffixTrie
-from CC_Trie import Compound
 
 
-def run_cc_trie(function, file_path="Data/elements_table_v20.txt"):
+def run_cc_trie(function, file_path="Data/elements_table_v20.txt", elements_file="Data/elements_table_v20.txt", element='H', compound="NH4NO3"):
     """
     Function to run the CC_Trie script functionality.
     """
@@ -23,19 +19,19 @@ def run_cc_trie(function, file_path="Data/elements_table_v20.txt"):
 
     try:
         # Load element data from file
-        trie = trie.read_in_dictionary(file_path)
+        trie = trie.read_in_dictionary(file_path, elements_file)
 
         # Get all elements from the trie
-        elements = trie.get_words()
+        compounds_elements = trie.get_words()
 
         if(function == "chart_mass"):
-            compound_weights = CC_Trie.chart_element_mass(trie, "H")
+            compound_weights = CC_Trie.chart_element_mass(trie, element)
             print(compound_weights)
             return
 
-        if(function == "create_matrix"):
+        elif(function == "create_matrix"):
             # Define x, y, z
-            x = trie.get_node("He").data[0].symbol if elements else None  # Starting element (e.g., first from the list)
+            x = trie.get_node("He").data[0].symbol if compounds_elements else None  # Starting element (e.g., first from the list)
             y = "H"  # Example element to sum recursively
             z = "U"  # Another example element to sum recursively
 
@@ -44,11 +40,15 @@ def run_cc_trie(function, file_path="Data/elements_table_v20.txt"):
                 return
 
             # Create summation matrix
-            matrix = Trie.create_summation_matrix(trie, elements, x, y, z)
+            matrix = Trie.create_summation_matrix(trie, compounds_elements, x, y, z)
             # Plot the resulting matrix
-            Trie.plot_matrix(matrix, elements)
+            Trie.plot_matrix(matrix, compounds_elements)
             # Compute sum tables x, y, z for element x
-            Trie.plot_sum_for_single_element_x(elements, x)
+            Trie.plot_sum_for_single_element_x(compounds_elements, x)
+
+        elif function == "chart_compound_mass":
+            compound_masses = CC_Trie.chart_compound_mass(trie, compound)
+            print(compound_masses)
 
     except FileNotFoundError:
         print(f"File {file_path} not found. Please provide a valid file path.")
@@ -101,7 +101,7 @@ def run_suffix_trie(function, file_path="Data/elements_table_v20.txt"):
         else:
             print("Invalid choice. Try again.")
 
-def cc_matcher(function, file_path="Data/elements_table_v20.txt", compounds=["CH4", "CH4", "CH4"], ):
+def cc_matcher(function, file_path="Data/elements_table_v20.txt",  compounds=["CH4", "CH4", "CH4"]):
     trie = Trie()
     file_name = file_path
     try:
@@ -113,13 +113,14 @@ def cc_matcher(function, file_path="Data/elements_table_v20.txt", compounds=["CH
         compound_d = CC_Matcher.Get_Mass(compounds[0])
         compound_i = CC_Matcher.Get_Mass(compounds[1])
         compound_h = CC_Matcher.Get_Mass(compounds[2])
-        print(f"C Constant value for {compounds} is {CC_Matcher.Get_Cohesion_Constant(compound_d, compound_i, compound_h)}")
+        print(f"The C Constant value for {compounds} is {CC_Matcher.Get_C_Constant(compound_d, compound_i, compound_h)}")
     elif function == "get_mass":
         formula_quantity = CC_Matcher.Get_Mass(compounds[0])
         mass = 0
         for e, q in formula_quantity.items():
             mass += (trie.get(e).data[0].mass * q)
         print(f"molecular mass for {compounds[0]} is {mass}")
+
 
 async def run_archiver(search_term=None):
     """
@@ -144,7 +145,12 @@ async def main():
 
     # Subparser for cc_trie
     cc_trie_parser = subparsers.add_parser("cc_trie", help="Run the CC_Trie functionality.")
-    cc_trie_parser.add_argument("--function", type=str, required=True, help="functions [chart_mass, get_elements, create_matrix]")
+    cc_trie_parser.add_argument("--function", type=str, required=True, help="functions [chart_compound_mass, get_elements, create_matrix]")
+    cc_trie_parser.add_argument("--compound", type=str, required=False,
+                                   help="from functions chart_compound_mass")
+    cc_trie_parser.add_argument("--element", type=str, required=False,
+                                help="from functions chart_element")
+    cc_trie_parser.add_argument("--elements_file", type=str, required=False, help="Path to the elements file.")
     cc_trie_parser.add_argument("--file", type=str, required=False, help="Path to the elements compounds file.")
 
     # Subparser for cc_trie_matcher
@@ -174,7 +180,7 @@ async def main():
     # Handle the selected mode
     if args.mode == "cc_trie":
         print(f"Running trie utility with options --function {args.function} --file {args.file}")
-        run_cc_trie(args.function, args.file)
+        run_cc_trie(args.function, args.file, args.elements_file)
 
     elif args.mode == "compound_trie_suffix":
         print(f"Running Trie Suffix utility with options --file {args.file}")
@@ -186,7 +192,7 @@ async def main():
         print("Running Compound Cohesion Constant Matcher...")
         compounds = args.compounds.split(" ")
         # Add logic for compound_trie_suffix here
-        cc_matcher(args.function, args.file, compounds=compounds)
+        cc_matcher(args.function, args.file, compounds=args.compounds, compound=args.compound)
 
     elif args.mode == "archiver":
         search = args.search
@@ -195,7 +201,7 @@ async def main():
         await scraper.google_scraper(driver, search)
         driver.close()
 
-    exit(0)
+    return
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:

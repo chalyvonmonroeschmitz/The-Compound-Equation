@@ -1,7 +1,6 @@
 #!/usr/bin/python
 import os
 import sys
-import time
 from time import sleep
 from pynput.keyboard import Key, Controller
 # Load webdriver
