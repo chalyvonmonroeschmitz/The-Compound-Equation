@@ -57,7 +57,10 @@ def run_cc_trie(function, file="Data/elements_table_v20.txt", elements_file=None
             CC_Trie.plot_sum_for_single_element_x(elements, x)
 
         elif function == "chart_compound_mass":
-            compound_masses = CC_Trie.chart_compound_mass(trie, compound)
+            if len(trie.root.children) < 1:
+                compound_masses = CC_Trie.chart_compound_mass(elements_trie, compound)
+            else:
+                compound_masses = CC_Trie.chart_compound_mass(trie, compound)
             print(compound_masses)
 
     except FileNotFoundError:
@@ -66,7 +69,7 @@ def run_cc_trie(function, file="Data/elements_table_v20.txt", elements_file=None
 def run_suffix_trie(function, file_path="Data/elements_table_v20.txt"):
     """
         Main function to test the enhanced SuffixTrie with metadata (SuffixTrieData).
-        """
+    """
     # Create an empty Suffix Trie
     suffix_trie = SuffixTrie()
     # Load content from the file into the trie

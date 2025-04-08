@@ -146,7 +146,7 @@ class Trie:
 
         return top_word
 
-    def read_in_dictionary(self, file_name, elements_file=None):
+    def read_in_dictionary(self, file_name, elements_file):
         """
         Reads a dictionary from a file and inserts all words into the trie.
         """
@@ -154,12 +154,13 @@ class Trie:
         # Load custom elements table
         elements_trie = Trie()
         if elements_file is None:
-            elements_file = file_name
+            elements_file = "Data/elements_table_v20.txt"
+
         try:
             with open(elements_file, 'r') as file:
                 for line in file:
                     try:
-                        # Split the line and ensure it has exactly 5 values
+                        # Split the line
                         parts = line.split()
                         number, symbol, name, mass, formula = parts
                         number = int(number)
@@ -176,7 +177,7 @@ class Trie:
                 with open(file_name, 'r') as file:
                     for line in file:
                         try:
-                            # Split the line and ensure it has exactly 5 values
+                            # Split the line and
                             parts = line.split('\t')
                             formula, name, number = parts
                             number = str(number)
@@ -290,21 +291,30 @@ def chart_compound_mass(trie, compound):
     sorted_elements = sorted(compound_masses.keys())
     sorted_masses = [compound_masses[element] for element in sorted_elements]
 
-    # Split the data into chunks of 33 bins
-    chunk_size = 33
+    # Split the plots into chunks size
+    chunk_size = 99
     for i in range(0, len(sorted_elements), chunk_size):
         chunk_elements = sorted_elements[i:i + chunk_size]
         chunk_masses = sorted_masses[i:i + chunk_size]
 
-        # Plot the Cartesian graph for the current chunk
-        plt.figure(figsize=(16, 9))  # Adjusted for 1080p resolution (16:9 aspect ratio)
-        plt.bar(chunk_elements, chunk_masses, color='skyblue')
+        # Plot the graph for the current chunk
+        plt.figure(figsize=(32, 18))  # Adjusted for 1080p resolution (32:18 aspect ratio)
+        plt.bar(chunk_elements, chunk_masses, color='skyblue', align='center', width=0.8)  # Align bars to edges
         plt.xlabel('Element Formula', fontsize=14, labelpad=20)  # Add padding to the x-axis label
         plt.ylabel('Total Mass', fontsize=14, labelpad=20)  # Add padding to the y-axis label
         plt.title(f"Compound Mass Distribution for {compound} (Chunk {i // chunk_size + 1})", fontsize=16, pad=30)
-        plt.xticks(rotation=45, ha='right', fontsize=10)  # Rotate x-axis labels and align them to the right
+
+        # Set x-axis limits to remove front and end padding
+        plt.xlim(-0.5, len(chunk_elements) - 0.5)
+
+        # Rotate and align x-axis labels to prevent overlap
+        plt.xticks(rotation=45, ha='right', fontsize=10)
+
+        # Adjust layout to ensure labels and elements are spaced evenly
         plt.tight_layout(pad=4.0)  # Add padding to prevent overlap
         plt.subplots_adjust(bottom=0.25)  # Increase bottom margin for better label visibility
+
+        # Show the plot
         plt.show()
         plt.close()
 
