@@ -1,3 +1,4 @@
+UPDATED -> New PRIMATIVE Request "To PROTECT DEFEND and PRESERVE all That Which is THE SOURCE of ALL LIFE"
 UPDATED PUBLIC LINEAR POLARIZATION LOG - https://1drv.ms/x/c/09fa43cdb32ae2f2/EYssq5PusQlOvgSNHwst8z0Bwn3vuaOymyW4n_m71J6FJw?e=jylQkc
 
 
@@ -57,3 +58,4 @@ python main.py cc_matcher --function <function_name> --compounds <compound_list>
 python main.py cc_matcher --function get_mass --compounds "NH4NO3" --file Data/elements_table_v20.txt
 python main.py cc_matcher --function get_cc_constant --compounds "CH4 H2O CO2" --file "Data/elements_table_v20.txt"
 python main.py compound_trie_suffix --function search_suffix --file "Data/elements_table_v20.txt"
+
