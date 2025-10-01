@@ -3,6 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import CC_Matcher
+import pandas as pd
+import os
+
 
 class ElementNode:
 
@@ -58,6 +61,7 @@ class Compound:
 
     def get_name(self):
         return self.name
+
 
 class Trie:
     def __init__(self):
@@ -146,15 +150,13 @@ class Trie:
 
         return top_word
 
-    def read_in_dictionary(self, file_name, elements_file):
+    def read_in_dictionary(self, file_name=None, elements_file="Data/elements_table_v20.txt"):
         """
         Reads a dictionary from a file and inserts all words into the trie.
         """
-        trie = Trie()
-        # Load custom elements table
-        elements_trie = Trie()
+        elements_trie = self
         if elements_file is None:
-            elements_file = "Data/elements_table_v20.txt"
+            elements_file = "Data/Chemical_Formulae_Wiki_06042025.txt"
 
         try:
             with open(elements_file, 'r') as file:
@@ -173,7 +175,7 @@ class Trie:
             print(f"Custom Elements Table File Missing from Data/elements_table_(version): {e}")
 
         try:
-            if "Chemical_Formulae_" in file_name:
+            if file_name and "Chemical_Formulae_" in file_name:
                 with open(file_name, 'r') as file:
                     for line in file:
                         try:
@@ -186,23 +188,30 @@ class Trie:
                             elements = CC_Matcher.Get_Mass(formula)
                             element_masses = {}
                             # Sum up masses for each element
-                            for e in elements:
-                                node = elements_trie.get(e)
-                                if node and node.data:  # Ensure the node has data
-                                    total_mass = sum(compound.get_mass() for compound in node.data)
-                                    element_masses[e] = total_mass
-                                    mass = total_mass
+
+                            for e, v in enumerate(elements.items()):
+                                try:
+                                    node = self.get(e)
+                                    if node and node.data:  # Ensure the node has data
+                                        total_mass = sum(node.data[0].mass)
+                                        element_masses[e] = total_mass
+                                        mass = total_mass
+                                except TypeError:
+                                    continue
 
                             symbol = str(formula)
                             data = Compound(number, symbol, name, mass, formula)
-                            trie.insert(formula, data)
+                            self.insert(formula, data)
                         except ValueError:
                             continue  # Skip lines with invalid data
+                        except TypeError:
+                            continue
 
         except FileNotFoundError as e:
             print(f"Error: {e}")
 
-        return elements_trie, trie
+        return elements_trie
+
 
 def chart_elements_mass(trie):
     """
@@ -236,6 +245,7 @@ def chart_elements_mass(trie):
     # return summations
     return element_masses
 
+
 def chart_element_mass(trie, element):
     """
        Plots a Cartesian graph of chemical elements and their corresponding masses.
@@ -267,6 +277,7 @@ def chart_element_mass(trie, element):
 
     # returns array of the summations
     return element_masses
+
 
 def chart_compound_mass(trie, compound):
     """
@@ -319,6 +330,149 @@ def chart_compound_mass(trie, compound):
         plt.close()
 
     # Returns array of the summations
+    return compound_masses
+
+
+def chart_compound_matrix(trie, compound):
+    """
+    Plots a scatter chart of compounds and their corresponding masses in an X-Y grid format.
+"""
+    compounds = trie.get_words()  # Get all element formulas from the trie
+    compound_masses = {}
+
+    # Calculate total mass for each compound
+    for e in compounds:
+        try:
+            node = trie.get(e)
+            compound_node = trie.get(compound)
+            if node and node.data and compound_node and compound_node.data:  # Ensure both nodes have data
+                total_mass = compound_node.data[0].mass + sum(compound.get_mass() for compound in node.data)
+                compound_masses[e] = total_mass
+        except ValueError:
+            print(f"Error processing compound {e}: {ValueError}")
+            continue
+
+    # Convert compound masses dictionary into a DataFrame (2D matrix structure)
+    compounds_list = sorted(compound_masses.keys())
+    matrix_size = len(compounds_list)  # Define square matrix dimensions
+    mass_matrix = np.zeros((matrix_size, matrix_size))
+
+    # Populate mass values into the matrix
+    for i, row_compound in enumerate(compounds_list):
+        for j, col_compound in enumerate(compounds_list):
+            mass_matrix[i, j] = compound_masses[row_compound] + compound_masses[col_compound]
+
+    # Create a DataFrame for visualization
+    mass_df = pd.DataFrame(mass_matrix, index=compounds_list, columns=compounds_list)
+
+    # Plot a heatmap
+    plt.figure(figsize=(12, 8))
+    sns.heatmap(mass_df, cmap='coolwarm', annot=True, fmt=".1f", linewidths=0.5)
+
+    # Add labels
+    plt.xlabel("Compounds (Columns)", fontsize=14)
+    plt.ylabel("Compounds (Rows)", fontsize=14)
+    plt.title(f"Heatmap of Compound Masses for {compound}", fontsize=16)
+
+    # Save the plot
+    save_path = os.path.join("Data/GRAPHS", f"{compound}_chunk_{i+1}.png")
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close()
+
+    # Display the plot
+    plt.show()
+    plt.close()
+    return mass_df
+
+def Sum_Elemental_mass(elements_trie, compound):
+    # Calculate total mass for each compound
+    total_mass = 0
+    for c in compound:
+        try:
+            for i, (k, v) in enumerate(CC_Matcher.Get_Mass(c).items()):
+                try:
+                    node = elements_trie.get(k)
+                    compound_node = elements_trie.get(compound)
+                    if node and node.data and compound_node and compound_node.data:  # Ensure both nodes have data
+                        for index, (key, value) in enumerate(CC_Matcher.Get_Mass(node.data[0].formula).items()):
+                            total_mass += elements_trie.get(key).data[0].mass * value
+                except Exception as e:
+                    print(e)
+                    continue
+        except Exception as e:
+            print(e)
+            continue
+    return total_mass
+
+def chart_compound_mass_grid(trie, compound_formulas, compound):
+    """
+    Plots a scatter chart of compounds and their corresponding masses in an X-Y grid format.
+    """
+    compounds = compound_formulas  # Get all element formulas from the trie
+    compound_masses = {}
+    # load periodic table
+    elements_trie = trie.read_in_dictionary()
+
+    # Calculate total mass for each compound
+    for c in compounds:
+        try:
+            for i, (k, v) in enumerate(CC_Matcher.Get_Mass(c).items()):
+                try:
+                    node = elements_trie.get(k)
+                    compound_node = trie.get(compound)
+                    total_mass = 0
+                    if node and node.data and compound_node and compound_node.data:  # Ensure both nodes have data
+                        for index, (key, value) in enumerate(CC_Matcher.Get_Mass(node.data[0].formula).items()):
+                            total_mass = + elements_trie.get(key).data[0].mass * value
+                except Exception as e:
+                    print(e)
+                    continue
+
+            compound_masses[c] = total_mass
+        except Exception as e:
+            print(e)
+            continue
+
+        sorted_elements = sorted(compound_masses.keys())
+        x_compound_mass = Sum_Elemental_mass(elements_trie, compound)
+        # Create a grid-like matrix structure for X-Y visualization
+        matrix_size = len(sorted_elements)
+        mass_matrix = np.zeros((matrix_size, matrix_size))
+
+        # Populate matrix with summed masses
+        for i, row_compound in enumerate(sorted_elements):
+            for j, col_compound in enumerate(sorted_elements):
+                cc_value = CC_Matcher.Get_C_Constant(x_compound_mass, compound_masses[row_compound],
+                                                     Sum_Elemental_mass(elements_trie, col_compound))
+                mass_matrix[i, j] = cc_value
+
+        # Plot the matrix as a grid
+        plt.figure(figsize=(24, 16))
+        plt.imshow(mass_matrix, cmap='viridis', interpolation='nearest')
+
+        # Add the summed masses (digits) as text in each cell
+        for i in range(matrix_size):
+            for j in range(matrix_size):
+                plt.text(j, i, f"{mass_matrix[i, j]:.2f}", ha='center', va='center', color='white', fontsize=16)
+
+        # Configure ticks and labels
+        plt.xticks(ticks=np.arange(matrix_size), labels=sorted_elements, rotation=90, fontsize=10)
+        plt.yticks(ticks=np.arange(matrix_size), labels=sorted_elements, fontsize=10)
+
+        # Add gridlines and title
+        plt.grid(visible=True)  # Disable gridlines for better readability
+        plt.title(f"Grid Plot for Compound {compound}", fontsize=16, pad=20)
+
+        # Adjust layout to ensure no overlap
+        plt.tight_layout()
+
+        # Save the plot
+        save_path = os.path.join("Data/GRAPHS", f"{compound}_chunk_{i+1}.png")
+        plt.savefig(save_path, dpi=800, bbox_inches='tight')
+        # Display the plot
+        plt.show()
+
+    # Return the computed compound masses for reference
     return compound_masses
 
 
@@ -423,6 +577,8 @@ def plot_matrix(matrix, elements):
 This function will run for a prolonged period of time to display every element and it's corresponding 3 dimensional mass
 Advisable to use the find the sum of a specific element
 """
+
+
 def compute_and_plot_sum_tables(elements):
     """
     Computes the sum of element x, y, and z and displays the sum values
@@ -502,6 +658,7 @@ def plot_sum_for_single_element_x(elements, x_element):
     plt.show()
     plt.close()
 
+
 def main():
     # Initialize the Trie
     trie = Trie()
@@ -514,9 +671,8 @@ def main():
         # Get all elements from the trie
         elements = trie.get_words()
 
-        compound_weights = chart_element_mass(trie, "H")
-        print(compound_weights)
-
+        matrix_table = chart_compound_mass_grid(trie, "CH4")
+        print(matrix_table)
 
         # Define x, y, z
         x = trie.get_node("He").data[0].symbol if elements else None  # Starting element (e.g., first from the list)
@@ -529,6 +685,8 @@ def main():
 
         # Create summation matrix
         matrix = create_summation_matrix(trie, elements, x, y, z)
+        matrix = matrix + CC_Matcher
+
         # Plot the resulting matrix
         plot_matrix(matrix, elements)
         # compute sum tables x y z for element x
@@ -536,6 +694,7 @@ def main():
 
     except FileNotFoundError:
         print(f"File {file_name} not found. Please provide a valid file path.")
+
 
 # Call the main function to run the tests
 if __name__ == "__main__":

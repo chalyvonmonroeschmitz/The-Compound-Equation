@@ -19,15 +19,16 @@ def run_cc_trie(function, file="Data/elements_table_v20.txt", elements_file=None
 
     try:
         # Load element data from file
-        elements_trie, trie = trie.read_in_dictionary(file_name=file, elements_file=elements_file)
+        elements_trie = trie.read_in_dictionary(file_name=file, elements_file=elements_file)
+        compound_formulas = []
 
         # Get all elements from the trie
         if (len(trie.root.children)) < 1:
             trie = elements_trie
             elements = trie.get_words()
         else:
-            elements_trie = elements_trie
-            elements = elements_trie.get_words()
+            compound_formulas = elements_trie
+            elements = trie.get_words()
 
         if(function == "chart_mass"):
             compound_weights = CC_Trie.chart_element_mass(trie, element)
@@ -40,6 +41,13 @@ def run_cc_trie(function, file="Data/elements_table_v20.txt", elements_file=None
                 x = elements_trie.get_node(element).data[0].symbol if elements else None  # Starting element (e.g., first from the list)
                 y = element  # Example element to sum recursively
                 z = element  # Another example element to sum recursively
+            elif (function == "create_matrix"):
+                # Define x, y, z
+                if (len(trie.root.children)) < 1:
+                    x = elements_trie.get_node(element).data[
+                        0].symbol if elements else None  # Starting element (e.g., first from the list)
+                    y = element  # Example element to sum recursively
+                    z = element  # Another example element to sum recursively
             else:
                 x = trie.get_node(element).data[0].symbol if elements else None  # Starting element (e.g., first from the list)
                 y = element  # Example element to sum recursively
@@ -56,9 +64,11 @@ def run_cc_trie(function, file="Data/elements_table_v20.txt", elements_file=None
             # Compute sum tables x, y, z for element x
             CC_Trie.plot_sum_for_single_element_x(elements, x)
 
-        elif function == "chart_compound_mass":
-            if len(trie.root.children) < 1:
+        elif function == "chart_compound_mass" or "chart_compound_matrix":
+            if function == "chart_compound_mass" and len(trie.root.children) < 1:
                 compound_masses = CC_Trie.chart_compound_mass(elements_trie, compound)
+            elif function == "chart_compound_mass_grid":
+                compound_masses = CC_Trie.chart_compound_mass_grid(trie, elements, compound)
             else:
                 compound_masses = CC_Trie.chart_compound_mass(trie, compound)
             print(compound_masses)
@@ -208,7 +218,7 @@ async def main():
     if args.mode == "cc_trie":
         print(f"Running trie utility with options --function {args.function} --file {args.file}")
         if args.function == "create_matrix":
-            run_cc_trie(args.function, args.file, element=args.element)
+            run_cc_trie(args.function, args.file, args.elements_file, element=args.element)
         else:
             run_cc_trie(args.function, args.file)
 
@@ -228,6 +238,10 @@ async def main():
         search = args.search
         scraper = archive_scraper.Google_Scraper()
         driver = scraper.initChromeDriver(False)
+        # increase driver connection timeout and set page/script timeouts
+        driver.command_executor.set_timeout(300)
+        driver.set_page_load_timeout(45)
+        driver.set_script_timeout(45)
         await scraper.google_scraper(driver, search)
         driver.close()
 

@@ -9,7 +9,6 @@ from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 # If you don't have tesseract executable in your PATH, include the following:
 pytesseract.pytesseract.tesseract_cmd = os.getcwd() + r"\.lib\tesseract4win64\x64\tesseract.exe"
 
-
 class Archiver(Scraper):
     def __init__(self):
         self.init()
