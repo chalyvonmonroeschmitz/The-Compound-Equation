@@ -1,8 +1,7 @@
 UPDATED -> New PRIMATIVE Request "To PROTECT DEFEND and PRESERVE all That Which is THE SOURCE of ALL LIFE"
 UPDATED PUBLIC LINEAR POLARIZATION LOG - https://1drv.ms/x/c/09fa43cdb32ae2f2/EYssq5PusQlOvgSNHwst8z0Bwn3vuaOymyW4n_m71J6FJw?e=jylQkc
 
-
-# CC-TRIE Project
+# CC-TRIE Project -- All working Modules working since version 3.12.9
 
 This project provides tools for working with Trie data structures and includes functionalities for creating summation matrices, plotting data, and running matching algorithms.
 
