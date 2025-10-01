@@ -209,7 +209,13 @@ async def main():
 
     # Subparser for archiver
     archiver_parser = subparsers.add_parser("archiver", help="Run the Archiver functionality.")
-    archiver_parser.add_argument("--search", type=str, required=True, help="Search term for the Archiver.")
+    archiver_parser.add_argument("--search", type=str, required=False,
+                                 help="Google search query for the Archiver (use this for normal search mode).")
+    archiver_parser.add_argument("--search-file", action="store_true",
+        help="Enable file-driven scraping mode (reads URLs from a file)."
+    )
+    archiver_parser.add_argument("--file-name", type=str, required=False,
+        help="Path to a text file containing URLs (one per line) for file-driven scraping.")
 
     # Parse the arguments
     args = parser.parse_args()
@@ -235,15 +241,30 @@ async def main():
         cc_matcher(args.function, args.file, compounds=args.compounds)
 
     elif args.mode == "archiver":
-        search = args.search
         scraper = archive_scraper.Google_Scraper()
         driver = scraper.initChromeDriver(False)
-        # increase driver connection timeout and set page/script timeouts
+
+        # Increase driver connection timeout and set page/script timeouts
         driver.command_executor.set_timeout(300)
-        driver.set_page_load_timeout(45)
-        driver.set_script_timeout(45)
-        await scraper.google_scraper(driver, search)
-        driver.close()
+        driver.set_page_load_timeout(300)
+        driver.set_script_timeout(300)
+
+        try:
+            # File-driven mode: either explicit --search-file or legacy trigger "file-search"
+            if getattr(args, "search_file", False) or (getattr(args, "search", None) == "file-search"):
+                if not getattr(args, "file_name", None):
+                    print("Error: --file-name is required when using --search-file or --search file-search.")
+                    return
+                # Call the file-based scraper
+                await scraper.scrape_from_file(driver, args.file_name)
+            else:
+                # Default: normal Google search mode
+                if not getattr(args, "search", None):
+                    print("Error: --search is required when not using --search-file.")
+                    return
+                await scraper.google_scraper(driver, args.search)
+        finally:
+            driver.close()
 
     return
 
