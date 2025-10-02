@@ -1,7 +1,13 @@
 UPDATED -> New PRIMATIVE Request "To PROTECT DEFEND and PRESERVE all That Which is THE SOURCE of ALL LIFE"
 UPDATED PUBLIC LINEAR POLARIZATION LOG - https://1drv.ms/x/c/09fa43cdb32ae2f2/EYssq5PusQlOvgSNHwst8z0Bwn3vuaOymyW4n_m71J6FJw?e=jylQkc
 
-# CC-TRIE Project -- All working Modules working since version 3.12.9
+# CC-TRIE Project
+## Version Specification
+- Python 3.12.9
+- ChromeDriver 134.0.6998.3
+- Chrome Browser 134.x
+- Tesseract 4.0.0
+
 
 This project provides tools for working with Trie data structures and includes functionalities for creating summation matrices, plotting data, and running matching algorithms.
 
@@ -10,7 +16,7 @@ CC-TRIE/ ├── src/ │ ├── CC_Trie.py │ ├── CC_matcher.py │
 
 
 ## How to Use
-First setup your Python packages first for the required modules by running
+First setup your Python packages first for the required modules by running and uncomment the Tesseract import at the top of the main.py file
 ```bash
 pip install -r requirements.txt
 python main.py 
