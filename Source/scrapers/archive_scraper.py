@@ -174,29 +174,33 @@ class Google_Scraper(Archiver):
 
                     # Skip obviously unsupported sources
                     if not src or src.startswith("data:image/svg"):
-                        img = ski.io.imread(src)
-                        img = normalize_image_array(img)
-                        # Ensure write-compatible dtype (uint8/uint16). If float, scale to uint8
-                        if img.dtype not in (np.uint8, np.uint16):
-                            img = img_as_ubyte(img)  # handles 0..1 floats safely
-
-                        # Build a safe filename
-                        parsed = urlparse(src)
-                        base = os.path.basename(parsed.path)
-                        base = unquote(base)
-                        if not base:
-                            base = f"{title}_{idx}.png"
-
-                        # Strip query/fragment and illegal Windows characters
-                        name, ext = os.path.splitext(base)
-                        if not ext:
-                            ext = ".png"  # default to PNG
-                        safe_name = re.sub(r'[<>:"/\\|?*\x00-\x1F]', "_", f"{name}{ext}")
-                        out_path = os.path.join(working_path, safe_name)
-
-                        # Prefer Pillow writer via imageio to avoid OpenCV writer errors
-                        iio.imwrite(out_path, img)
+                        # no image or SVGs are not handled here
                         continue
+
+                    # Read image
+                    img = ski.io.imread(src)
+                    img = normalize_image_array(img)
+
+                    # Ensure write-compatible dtype (uint8/uint16). If float, scale to uint8
+                    if img.dtype not in (np.uint8, np.uint16):
+                        img = img_as_ubyte(img)  # handles 0..1 floats safely
+
+                    # Build a safe filename
+                    parsed = urlparse(src)
+                    base = os.path.basename(parsed.path)
+                    base = unquote(base)
+                    if not base:
+                        base = f"{title}_{idx}.png"
+
+                    # Strip query/fragment and illegal Windows characters
+                    name, ext = os.path.splitext(base)
+                    if not ext:
+                        ext = ".png"  # default to PNG
+                    safe_name = re.sub(r'[<>:"/\\|?*\x00-\x1F]', "_", f"{name}{ext}")
+                    out_path = os.path.join(working_path, safe_name)
+
+                    # Prefer Pillow writer via imageio to avoid OpenCV writer errors
+                    iio.imwrite(out_path, img)
 
                     # OCR and NLU
                     extracted_text = pytesseract.image_to_string(img)
@@ -209,11 +213,11 @@ class Google_Scraper(Archiver):
                         keywords=KeywordsOptions(sentiment=True, emotion=True))).get_result())]
 
                 except ApiException as ex:
-                    print("Method failed with status code " + str(ex.code) + ": " + ex.message)
+                    print("NLU Extraction failed with status code " + str(ex.code) + ": " + ex.message)
                     continue
                 except OSError as OSe:
                     # Will catch path issues and writer backend problems
-                    print("Write failed: " + str(OSe))
+                    print("NLU Write failed: " + str(OSe))
                     continue
                 except ValueError as ve:
                     print(str(ve))
