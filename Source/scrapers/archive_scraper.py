@@ -42,7 +42,11 @@ class Google_Scraper(Archiver):
         super().__init__()
 
     async def google_scraper(self, driver, search_term, domain_region=""):
-        driver.command_executor.set_timeout(300)  # seconds
+        # Increase driver connection timeout and set page/script timeouts
+        driver.command_executor.set_timeout(300)
+        driver.set_page_load_timeout(300)
+        driver.set_script_timeout(300)  # seconds
+
         working_path = self.filepath + f"/{search_term}-{str(datetime.date.today())}"
         os.makedirs(working_path, exist_ok=True)
         driver.get(url=f"https://www.google.com{domain_region}/search?q={search_term}")

@@ -247,10 +247,6 @@ async def main():
         scraper = archive_scraper.Google_Scraper()
         driver = scraper.initChromeDriver(False)
 
-        # Increase driver connection timeout and set page/script timeouts
-        driver.command_executor.set_timeout(300)
-        driver.set_page_load_timeout(300)
-        driver.set_script_timeout(300)
 
         try:
             # File-driven mode: either explicit --search-file or legacy trigger "file-search"

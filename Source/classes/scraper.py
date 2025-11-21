@@ -48,7 +48,7 @@ class Scraper:
 
         chrome_options.add_argument("--disable-notifications")
         chrome_options.add_argument("--disable-infobars")
-        chrome_options.add_argument("--disable-popup-blocking")
+        # chrome_options.add_argument("--disable-popup-blocking")
         chrome_options.add_argument("--disable-extensions")
         # cookie store options
         # chrome_options.add_argument("--user-data-dir=sessions")
