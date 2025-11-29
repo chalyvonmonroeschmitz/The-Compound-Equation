@@ -12,7 +12,7 @@ import imageio.v3 as iio
 from ibm_cloud_sdk_core import ApiException
 from ibm_watson.natural_language_understanding_v1 import EntitiesOptions, RelationsOptions, Features, KeywordsOptions
 from selenium.common import InvalidArgumentException
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
 from classes.archiver import Archiver
@@ -42,11 +42,6 @@ class Google_Scraper(Archiver):
         super().__init__()
 
     async def google_scraper(self, driver, search_term, domain_region=""):
-        # Increase driver connection timeout and set page/script timeouts
-        driver.command_executor.set_timeout(300)
-        driver.set_page_load_timeout(300)
-        driver.set_script_timeout(300)  # seconds
-
         working_path = self.filepath + f"/{search_term}-{str(datetime.date.today())}"
         os.makedirs(working_path, exist_ok=True)
         driver.get(url=f"https://www.google.com{domain_region}/search?q={search_term}")
@@ -96,7 +91,10 @@ class Google_Scraper(Archiver):
         print("Search NLU Extraction completed! Exiting Program!")
 
     async def scrape_page(self, driver, url, working_path):
-        driver.command_executor.set_timeout(300)  # seconds
+        # Increase driver connection timeout and set page/script timeouts
+        driver.command_executor.set_timeout(30)
+        driver.set_page_load_timeout(30)
+        driver.set_script_timeout(30)  # seconds
         driver.get(url)
         body = driver.find_element(By.XPATH, "//body")
         html = driver.find_element(By.XPATH, "//html")
@@ -123,6 +121,15 @@ class Google_Scraper(Archiver):
                     "relations": relations_js,
                     "keywords": keywords_js
                 }
+        except TimeoutException:
+            print(f"Timeout loading page: {url}")
+            data_set = {
+                "document": title,
+                "url": url,
+                "entities": entities_js,
+                "relations": relations_js,
+                "keywords": keywords_js
+            }
         except ApiException as ex:
             print("Method failed with status code " + str(ex.code) + ": " + ex.message)
             data_set = {
@@ -147,8 +154,6 @@ class Google_Scraper(Archiver):
             # remove leading/trailing whitespace and dots, then truncate
             cleaned = name.strip().strip('.')
             return cleaned[:max_len] if len(cleaned) > max_len else cleaned
-
-        # ... inside your method where `title`, `working_path`, and `data_set` exist ...
 
         safe_base = short_name(title)
 
@@ -266,7 +271,10 @@ class Google_Scraper(Archiver):
         os.makedirs(working_path, exist_ok=True)
 
         seen: set[str] = set()
-        driver.command_executor.set_timeout(300)  # seconds
+        # Increase driver connection timeout and set page/script timeouts
+        driver.command_executor.set_timeout(30)
+        driver.set_page_load_timeout(30)
+        driver.set_script_timeout(30)  # seconds
         with open(urls_file, "r", encoding="utf-8") as fh:
             for raw in fh:
                 url = raw.strip()
@@ -289,6 +297,9 @@ class Google_Scraper(Archiver):
                     await self.scrape_page(driver, url, working_path)
                     # Optional: be polite to servers / avoid rate limiting
                     await asyncio.sleep(0.5)
+                except TimeoutException:
+                    print(f"Timeout loading page: {url}")
+                    continue
                 except Exception as e:
                     print(f"Failed to scrape {url}: {e}")
                     continue

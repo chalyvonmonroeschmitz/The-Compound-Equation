@@ -1,6 +1,5 @@
 import sys
 import os
-import os
 # Uncomment to set configure path to your tesseract program
 # os.environ["TESSDATA_PREFIX"] = r"C:\\PATH\ TO\ TESSERACT\\tessdata\ FOLDER"
 # Add the Source directory to the Python path
